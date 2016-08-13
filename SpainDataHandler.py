@@ -20,7 +20,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 # acceleration of gravity
 GG = 9.81;
 
@@ -71,6 +70,21 @@ def get_bvf(rho, depth):
     bvf[i+1] = bvf[i]
 
     return bvf
+    
+def get_index_point(array):
+    un_array = np.unique(array)
+    length = un_array.shape[0]
+    
+    index_point = np.empty([length, 2]);
+    index_point.fill(0)
+
+    for i in range(length):
+        ind = np.where(array == un_array[i])[0]
+        index_point[i, 0] = ind[0]
+        index_point[i, 1] = ind[-1]
+
+    return index_point
+    
 
 if __name__ == '__main__':
     print("Start")
@@ -84,7 +98,16 @@ if __name__ == '__main__':
                         
     for i in range(1):
         dataTemp = read_file(filenamesTemperature[i]) 
-        dataSal = read_file(filenamesTemperature[i])                    
-        rho = get_rho(dataTemp[:,2], dataSal[:,2])
-        depth = abs(dataSal[:,1])
-        bvf = get_bvf(dataTemp[:,2], depth)           
+        dataSal = read_file(filenamesTemperature[i])  
+        depth = abs(dataSal[:,1]) 
+        lon = dataSal[:, 0]
+        lat = lon
+        temprature = dataTemp[:,2]
+        salinity = dataSal[:,2]
+        ind_point = get_index_point(lon)
+        
+        
+        
+        #rho = get_rho(dataTemp[:,2], dataSal[:,2])
+        #depth = abs(dataSal[:,1])
+        #bvf = get_bvf(dataTemp[:,2], depth)           
