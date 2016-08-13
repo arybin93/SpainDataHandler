@@ -13,11 +13,16 @@ During_storm_P1_salinity.dat
 -9.55848    -32.52     35.74
 
 output files formats:
-
+lat    lon    depth_data    z_data    temp_data    salin_data    sigma_data(rho - 1000)    bvf_data
 """
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+# acceleration of gravity
+GG = 9.81;
 
 def read_file(fname):
     print("read file ", fname)
@@ -48,6 +53,24 @@ def get_rho(temp, sal):
     RK = E+F*sal+G*sal**1.5+(H+I*sal+J*sal**1.5)*P+(M+N*sal)*P**2
     rho = R0/(1-P/RK)-R00
     return rho
+  
+def get_bvf(rho, depth):
+    length = rho.shape[0]
+    
+    # init bvf array
+    bvf = np.empty(length);
+    bvf.fill(0)
+    
+    # incompressible fluid case
+    r1 = rho[0]
+    for i in range(length-1):
+        r2 = rho[i+1]
+        bvf[i] = np.sqrt(np.abs(GG*(r2 - r1)/(depth[i+1]) - depth[i])/(1000 + r2))
+        r1 = r2
+    
+    bvf[i+1] = bvf[i]
+
+    return bvf
 
 if __name__ == '__main__':
     print("Start")
@@ -62,7 +85,6 @@ if __name__ == '__main__':
     for i in range(1):
         dataTemp = read_file(filenamesTemperature[i]) 
         dataSal = read_file(filenamesTemperature[i])                    
-        rho = get_rho(dataTemp[:,2], dataSal[:,2])                
-                   
-    print(rho)
-    plt.plot(rho[1:15])
+        rho = get_rho(dataTemp[:,2], dataSal[:,2])
+        depth = abs(dataSal[:,1])
+        bvf = get_bvf(dataTemp[:,2], depth)           
