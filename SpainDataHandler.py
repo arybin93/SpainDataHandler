@@ -28,8 +28,9 @@ def read_file(fname):
     data = np.loadtxt(fname)
     return data
     
-def write_file(fname):
+def write_file(fname, data):
     print("write file %s", fname)
+    np.savetxt(fname, data, '%10.5f    %10.5f    %d    %10.5f    %10.5f    %10.5f    %10.5f')
 
 # Foffonoff state sea water 
 def get_rho(temp, sal):
@@ -53,7 +54,7 @@ def get_rho(temp, sal):
     rho = R0/(1-P/RK)-R00
     return rho
   
-def get_bvf(rho, depth):
+def get_bvf(rho, depth): 
     length = rho.shape[0]
     
     # init bvf array
@@ -68,7 +69,7 @@ def get_bvf(rho, depth):
         r1 = r2
     
     bvf[i+1] = bvf[i]
-
+    
     return bvf
     
 def get_index_point(array):
@@ -98,16 +99,35 @@ if __name__ == '__main__':
                         
     for i in range(1):
         dataTemp = read_file(filenamesTemperature[i]) 
-        dataSal = read_file(filenamesTemperature[i])  
+        dataSal = read_file(filenamesSalinity[i])  
         depth = abs(dataSal[:,1]) 
         lon = dataSal[:, 0]
         lat = lon
         temprature = dataTemp[:,2]
         salinity = dataSal[:,2]
         ind_point = get_index_point(lon)
+        ind_point = ind_point.astype(int)
+
+        # calculation sigma (rho - 1000)        
+        rho = get_rho(temprature, salinity)
+        length = ind_point.shape[0]
         
+        # init bvf array
+        length_all = depth.shape[0]
+        bvf = np.empty(length_all);
+        bvf.fill(0)
         
+        for j in range(length):          
+            j_start = ind_point[j, 0]
+            j_end = ind_point[j, 1]
+            rho_for_point = rho[j_start:j_end]
+            depth_for_point = depth[j_start:j_end]
+            bvf_for_point = get_bvf(rho_for_point, depth_for_point)
+            bvf[j_start:j_end] = bvf_for_point
+
+        # save result to file
+        data_for_save = np.c_[lon, lat , depth, temprature, salinity, rho, bvf]
+        fname = filenamesTemperature[i].replace("temperature", "data")
+        write_file(fname, data_for_save)
         
-        #rho = get_rho(dataTemp[:,2], dataSal[:,2])
-        #depth = abs(dataSal[:,1])
-        #bvf = get_bvf(dataTemp[:,2], depth)           
+    print("Done")
