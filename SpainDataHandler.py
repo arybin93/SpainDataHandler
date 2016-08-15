@@ -24,13 +24,15 @@ import matplotlib.pyplot as plt
 GG = 9.81;
 
 def read_file(fname):
+    os.chdir(r"D:\\ScientificWork\Work\SpainData\source_data")
     print("read file ", fname)
     data = np.loadtxt(fname)
     return data
     
 def write_file(fname, data):
-    print("write file %s", fname)
-    np.savetxt(fname, data, '%10.5f    %10.5f    %d    %10.5f    %10.5f    %10.5f    %10.5f')
+    os.chdir(r"D:\\ScientificWork\Work\SpainData\result_data")
+    print("write file ", fname)
+    np.savetxt(fname, data, '%10.5f    %10.5f    %2.2f    %10.5f    %10.5f    %10.5f    %10.5f')
 
 # Foffonoff state sea water 
 def get_rho(temp, sal):
@@ -82,15 +84,13 @@ def get_index_point(array):
     for i in range(length):
         ind = np.where(array == un_array[i])[0]
         index_point[i, 0] = ind[0]
-        index_point[i, 1] = ind[-1]
+        index_point[i, 1] = ind[-1]+1
 
     return index_point
-    
 
 if __name__ == '__main__':
     print("Start")
     
-    os.chdir("D:\ScientificWork\Work\SpainData\source_data")
     filenamesTemperature = ["Pre_storm_P1_temperature.dat", "During_storm_P1_temperature.dat", "Post_storm_P1_temperature.dat",
                             "Pre_storm_S2_temperature.dat", "During_storm_S2_temperature.dat", "Post_storm_S2_temperature.dat"];
     
@@ -113,20 +113,43 @@ if __name__ == '__main__':
         length = ind_point.shape[0]
         
         # init bvf array
-        length_all = depth.shape[0]
-        bvf = np.empty(length_all);
-        bvf.fill(0)
+        res_bvf = np.array([])
+        res_rho = np.array([])
+        res_depth = np.array([])
+        res_salinity = np.array([])
+        res_temperature = np.array([])
+        res_lon = np.array([])
+        res_lat = np.array([])
         
         for j in range(length):          
             j_start = ind_point[j, 0]
             j_end = ind_point[j, 1]
             rho_for_point = rho[j_start:j_end]
             depth_for_point = depth[j_start:j_end]
+            salinity_for_point = salinity[j_start:j_end]
+            temprature_for_point = temprature[j_start:j_end]
+            lon_fo_point = lon[j_start:j_end]
+            lat_for_point = lat[j_start:j_end]
+
+            rho_for_point = np.insert(rho_for_point, 0, rho_for_point[0])
+            depth_for_point = np.insert(depth_for_point, 0, 0)
+            salinity_for_point = np.insert(salinity_for_point, 0, salinity_for_point[0])
+            temprature_for_point = np.insert(temprature_for_point, 0, temprature_for_point[0])
+            lon_fo_point = np.insert(lon_fo_point, 0, lon_fo_point[0])
+            lat_for_point = np.insert(lat_for_point, 0, lat_for_point[0])
+            
+            res_rho = np.hstack((res_rho, rho_for_point))            
+            res_depth = np.hstack((res_depth, depth_for_point))
+            res_salinity = np.hstack((res_salinity, salinity_for_point))
+            res_temperature = np.hstack((res_temperature, temprature_for_point))
+            res_lon = np.hstack((res_lon, lon_fo_point))
+            res_lat = np.hstack((res_lat, lat_for_point))
+            
             bvf_for_point = get_bvf(rho_for_point, depth_for_point)
-            bvf[j_start:j_end] = bvf_for_point
+            res_bvf = np.hstack((res_bvf, bvf_for_point))
 
         # save result to file
-        data_for_save = np.c_[lon, lat , depth, temprature, salinity, rho, bvf]
+        data_for_save = np.c_[res_lon, res_lat , res_depth, res_temperature, res_salinity, res_rho, res_bvf]
         fname = filenamesTemperature[i].replace("temperature", "data")
         write_file(fname, data_for_save)
         
