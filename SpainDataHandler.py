@@ -32,7 +32,7 @@ def read_file(fname):
 def write_file(fname, data):
     os.chdir(r"D:\\ScientificWork\Work\SpainData\result_data")
     print("write file ", fname)
-    np.savetxt(fname, data, '%10.5f    %10.5f    %2.2f    %10.5f    %10.5f    %10.5f    %10.5f')
+    np.savetxt(fname, data, '%10.5f    %10.5f    %2.2f    %2.2f    %10.5f    %10.5f    %10.5f    %10.5f')
 
 # Foffonoff state sea water 
 def get_rho(temp, sal):
@@ -120,17 +120,20 @@ if __name__ == '__main__':
         res_temperature = np.array([])
         res_lon = np.array([])
         res_lat = np.array([])
+        res_max_depth = np.array([])
         
         for j in range(length):          
             j_start = ind_point[j, 0]
             j_end = ind_point[j, 1]
+            # get data for every point            
             rho_for_point = rho[j_start:j_end]
             depth_for_point = depth[j_start:j_end]
             salinity_for_point = salinity[j_start:j_end]
             temprature_for_point = temprature[j_start:j_end]
             lon_fo_point = lon[j_start:j_end]
             lat_for_point = lat[j_start:j_end]
-
+            
+            # add data for surface, every point
             rho_for_point = np.insert(rho_for_point, 0, rho_for_point[0])
             depth_for_point = np.insert(depth_for_point, 0, 0)
             salinity_for_point = np.insert(salinity_for_point, 0, salinity_for_point[0])
@@ -138,18 +141,25 @@ if __name__ == '__main__':
             lon_fo_point = np.insert(lon_fo_point, 0, lon_fo_point[0])
             lat_for_point = np.insert(lat_for_point, 0, lat_for_point[0])
             
+            # add max depth
+            len_point_data = depth_for_point.shape[0]
+            max_depth_for_point = np.empty(len_point_data);
+            max_depth_for_point.fill(np.max(depth_for_point))
+            
             res_rho = np.hstack((res_rho, rho_for_point))            
             res_depth = np.hstack((res_depth, depth_for_point))
             res_salinity = np.hstack((res_salinity, salinity_for_point))
             res_temperature = np.hstack((res_temperature, temprature_for_point))
             res_lon = np.hstack((res_lon, lon_fo_point))
             res_lat = np.hstack((res_lat, lat_for_point))
+            res_max_depth = np.hstack((res_max_depth, max_depth_for_point))
             
+            # get bvf for every point
             bvf_for_point = get_bvf(rho_for_point, depth_for_point)
             res_bvf = np.hstack((res_bvf, bvf_for_point))
 
         # save result to file
-        data_for_save = np.c_[res_lon, res_lat , res_depth, res_temperature, res_salinity, res_rho, res_bvf]
+        data_for_save = np.c_[res_lon, res_lat , res_max_depth, res_depth, res_temperature, res_salinity, res_rho, res_bvf]
         fname = filenamesTemperature[i].replace("temperature", "data")
         write_file(fname, data_for_save)
         
