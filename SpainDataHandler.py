@@ -97,7 +97,7 @@ if __name__ == '__main__':
     filenamesSalinity = ["Pre_storm_P1_salinity.dat", "During_storm_P1_salinity.dat", "Post_storm_P1_salinity.dat",
                         "Pre_storm_S2_salinity.dat", "During_storm_S2_salinity.dat", "Post_storm_S2_salinity.dat"];
                         
-    for i in range(1):
+    for i in range(6):
         dataTemp = read_file(filenamesTemperature[i]) 
         dataSal = read_file(filenamesSalinity[i])  
         depth = abs(dataSal[:,1]) 
