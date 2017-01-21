@@ -67,12 +67,13 @@ def get_bvf(rho, depth):
     r1 = rho[0]
     for i in range(length-1):
         r2 = rho[i+1]
-        bvf[i] = np.sqrt(np.abs(GG*(r2 - r1)/(depth[i+1]) - depth[i])/(1000 + r2))
+        bvf[i] = np.sqrt(np.abs(GG*(r2 - r1)/(depth[i+1] - depth[i])/(1000 + r2)))
         r1 = r2
     
     bvf[i+1] = bvf[i]
     
     return bvf
+
     
 def get_index_point(array):
     un_array = np.unique(array)
